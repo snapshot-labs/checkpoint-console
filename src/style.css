@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --spotify-black: #121212;
+  --spotify-dark-gray: #181818;
+  --spotify-light-gray: #282828;
+}
+
+body {
+  @apply bg-[#121212] text-white;
+  font-family: "CircularStd", system-ui, sans-serif;
+}
+
+@font-face {
+  font-family: "CircularStd";
+  src: url("https://cdn.jsdelivr.net/gh/hanken/circular-std@latest/CircularStd-Book.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "CircularStd";
+  src: url("https://cdn.jsdelivr.net/gh/hanken/circular-std@latest/CircularStd-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+}
