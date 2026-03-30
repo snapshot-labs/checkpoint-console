@@ -1,10 +1,12 @@
 import { RpcProvider } from 'starknet';
-import type { Network, Metadata } from '../types';
+import { Metadata, Network } from '../types';
 
 export function useBlockchainData() {
   const getRpcUrl = (chainId: number, isTestnet: boolean) => {
     if (chainId === -1) {
-      return isTestnet ? 'https://rpc.brovider.xyz/sn-sep' : 'https://rpc.brovider.xyz/sn';
+      return isTestnet
+        ? 'https://rpc.brovider.xyz/sn-sep'
+        : 'https://rpc.brovider.xyz/sn';
     }
     return `https://rpc.brovider.xyz/${chainId}`;
   };
@@ -12,9 +14,14 @@ export function useBlockchainData() {
   const fetchBlockForNetwork = async (network: Network, isTestnet: boolean) => {
     try {
       if (network.chainId === -1) {
-        const provider = new RpcProvider({ nodeUrl: getRpcUrl(network.chainId, isTestnet) });
+        const provider = new RpcProvider({
+          nodeUrl: getRpcUrl(network.chainId, isTestnet)
+        });
         const block = await provider.getBlockNumber();
-        return { networkId: network.id, block: parseInt('0x' + block.toString(16), 16) };
+        return {
+          networkId: network.id,
+          block: parseInt(`0x${block.toString(16)}`, 16)
+        };
       }
       const response = await fetch(getRpcUrl(network.chainId, isTestnet), {
         method: 'POST',
@@ -49,7 +56,7 @@ export function useBlockchainData() {
         `
       })
     }).then(res => res.json());
-    
+
     return response.data._metadatas;
   };
 

@@ -1,25 +1,20 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
+import vue from '@vitejs/plugin-vue';
+import AutoImport from 'unplugin-auto-import/vite';
+import Components from 'unplugin-vue-components/vite';
+import { defineConfig } from 'vite';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
     AutoImport({
-      imports: [
-        'vue',
-        'vue-router',
-      ],
-      dirs: [
-        'src/composables/**',
-      ],
+      imports: ['vue', 'vue-router'],
+      dirs: ['src/composables/**'],
       dts: true,
-      vueTemplate: true,
+      vueTemplate: true
     }),
     Components({
-      dts: true,
-    }),
-  ],
-})
+      dts: true
+    })
+  ]
+});

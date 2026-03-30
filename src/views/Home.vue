@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { NETWORKS, ENDPOINTS, UPDATE_INTERVAL_MS } from '../constants';
-import type { EndpointStatus, IndexingHistory, NetworkWithHistory, Network } from '../types';
-
+import { NETWORKS, UPDATE_INTERVAL_MS } from '../constants';
+import { EndpointStatus, IndexingHistory } from '../types';
 
 const isPageVisible = ref(true);
 const isAddingCustomEndpoint = ref(false);
@@ -23,13 +22,20 @@ const saveEndpointStates = () => {
       isExpanded: endpoint.isExpanded,
       hasStarted: endpoint.hasStarted
     }));
-    localStorage.setItem('checkpoint-console-endpoints', JSON.stringify(statesToSave));
+    localStorage.setItem(
+      'checkpoint-console-endpoints',
+      JSON.stringify(statesToSave)
+    );
   } catch (error) {
     console.error('Error saving endpoint states:', error);
   }
 };
 
-const loadEndpointStates = (): Array<{endpoint: string, isExpanded: boolean, hasStarted: boolean}> => {
+const loadEndpointStates = (): Array<{
+  endpoint: string;
+  isExpanded: boolean;
+  hasStarted: boolean;
+}> => {
   try {
     const saved = localStorage.getItem('checkpoint-console-endpoints');
     return saved ? JSON.parse(saved) : [];
@@ -43,7 +49,7 @@ const sortedEndpoints = computed(() => {
   const filteredEndpoints = endpointStatuses.value.filter(endpoint => {
     return endpoint.hasStarted || isCustomEndpointFocused.value;
   });
-  
+
   return [...filteredEndpoints].sort((a, b) => {
     if (a.hasStarted === b.hasStarted) {
       if (a.isExpanded === b.isExpanded) return 0;
@@ -62,20 +68,20 @@ const addCustomEndpoint = async (endpoint: string) => {
     });
     return;
   }
-  
+
   if (endpointStatuses.value.some(e => e.endpoint === endpoint)) {
     return;
   }
-  
+
   const newEndpointStatus = createEndpointStatus(endpoint);
   endpointStatuses.value.unshift(newEndpointStatus);
-  
+
   isAddingCustomEndpoint.value = false;
   isCustomEndpointFocused.value = false;
-  
+
   newEndpointStatus.isExpanded = true;
   newEndpointStatus.hasStarted = true;
-  
+
   saveEndpointStates();
   await fetchEndpointData(endpoint);
 };
@@ -86,15 +92,17 @@ const handleCustomEndpointBlur = () => {
 };
 
 const toggleEndpoint = async (endpoint: string) => {
-  const endpointStatus = endpointStatuses.value.find(e => e.endpoint === endpoint);
+  const endpointStatus = endpointStatuses.value.find(
+    e => e.endpoint === endpoint
+  );
   if (!endpointStatus) return;
-  
+
   if (!endpointStatus.hasStarted) {
     endpointStatus.hasStarted = true;
     endpointStatus.isExpanded = true;
     isAddingCustomEndpoint.value = false;
     isCustomEndpointFocused.value = false;
-    
+
     saveEndpointStates();
     await fetchEndpointData(endpoint);
   } else {
@@ -108,14 +116,14 @@ const removeEndpoint = (endpoint: string) => {
   if (index !== -1) {
     endpointStatuses.value.splice(index, 1);
   }
-  
-  const networksForEndpoint = NETWORKS.filter(n => 
+
+  const networksForEndpoint = NETWORKS.filter(() =>
     endpointStatuses.value.some(e => e.endpoint === endpoint)
   );
   networksForEndpoint.forEach(network => {
     indexingHistory.value.delete(network.indexer);
   });
-  
+
   saveEndpointStates();
 };
 
@@ -132,15 +140,23 @@ const createEndpointStatus = (endpoint: string): EndpointStatus => {
   };
 };
 
-const fetchCurrentBlocksForAvailableNetworks = async (availableIndexers: Set<string>) => {
+const fetchCurrentBlocksForAvailableNetworks = async (
+  availableIndexers: Set<string>
+) => {
   try {
-    const networksToFetch = NETWORKS.filter(network => availableIndexers.has(network.indexer));
+    const networksToFetch = NETWORKS.filter(network =>
+      availableIndexers.has(network.indexer)
+    );
     const mainnetNetworks = networksToFetch.filter(n => !n.testnet);
     const testnetNetworks = networksToFetch.filter(n => n.testnet);
-    
+
     const [mainnetBlocks, testnetBlocks] = await Promise.all([
-      Promise.all(mainnetNetworks.map(network => fetchBlockForNetwork(network, false))),
-      Promise.all(testnetNetworks.map(network => fetchBlockForNetwork(network, true)))
+      Promise.all(
+        mainnetNetworks.map(network => fetchBlockForNetwork(network, false))
+      ),
+      Promise.all(
+        testnetNetworks.map(network => fetchBlockForNetwork(network, true))
+      )
     ]);
 
     const allBlocks = [...mainnetBlocks, ...testnetBlocks];
@@ -155,47 +171,62 @@ const fetchCurrentBlocksForAvailableNetworks = async (availableIndexers: Set<str
 };
 
 const fetchEndpointData = async (endpoint: string) => {
-  const endpointStatus = endpointStatuses.value.find(e => e.endpoint === endpoint);
+  const endpointStatus = endpointStatuses.value.find(
+    e => e.endpoint === endpoint
+  );
   if (!endpointStatus) return;
-  
+
   if (!endpointStatus.hasStarted) {
     endpointStatus.hasStarted = true;
   }
-  
+
   endpointStatus.loading = true;
   endpointStatus.error = false;
-  
+
   try {
     const startTime = performance.now();
     const isTestnet = endpoint.includes('testnet');
-    
+
     const metadatas = await fetchMetadata(endpoint);
     endpointStatus.responseTime = Math.round(performance.now() - startTime);
 
-    const networks = isTestnet ? NETWORKS.filter(n => n.testnet) : NETWORKS.filter(n => !n.testnet);
+    const networks = isTestnet
+      ? NETWORKS.filter(n => n.testnet)
+      : NETWORKS.filter(n => !n.testnet);
     const availableNetworks = networks.filter(network =>
       metadatas.some(m => m.indexer === network.indexer)
     );
 
-    const statuses = availableNetworks.map((network) => {
+    const statuses = availableNetworks.map(network => {
       const currentBlock = globalCurrentBlocks.value.get(network.id) || 0;
       const indexedBlock = parseInt(
         metadatas.find(m => m.indexer === network.indexer)?.value || '0'
       );
-      
+
       const history = indexingHistory.value.get(network.indexer) || [];
-      const { blocksPerSecond } = calculateIndexingSpeed(network.indexer, indexedBlock, history);
-      
+      const { blocksPerSecond } = calculateIndexingSpeed(
+        network.indexer,
+        indexedBlock,
+        history
+      );
+
       // Update history
       const now = Date.now();
       const updatedHistory = [...history, { timestamp: now, indexedBlock }];
-      const tenMinutesAgo = now - (10 * 60 * 1000);
-      const recentHistory = updatedHistory.filter(h => h.timestamp > tenMinutesAgo);
+      const tenMinutesAgo = now - 10 * 60 * 1000;
+      const recentHistory = updatedHistory.filter(
+        h => h.timestamp > tenMinutesAgo
+      );
       indexingHistory.value.set(network.indexer, recentHistory);
-      
+
       const blocksBehind = currentBlock - indexedBlock;
-      const estimatedTimeToSync = blocksBehind === 0 ? 0 : (blocksPerSecond > 0 ? blocksBehind / blocksPerSecond : 0);
-      
+      const estimatedTimeToSync =
+        blocksBehind === 0
+          ? 0
+          : blocksPerSecond > 0
+            ? blocksBehind / blocksPerSecond
+            : 0;
+
       return {
         network,
         currentBlock,
@@ -208,12 +239,17 @@ const fetchEndpointData = async (endpoint: string) => {
 
     endpointStatus.networkStatuses = statuses;
     endpointStatus.loading = false;
-    
+
     const totalProgress = statuses.reduce((sum, status) => {
-      return sum + (status.currentBlock > 0 ? (status.indexedBlock / status.currentBlock * 100) : 0);
+      return (
+        sum +
+        (status.currentBlock > 0
+          ? (status.indexedBlock / status.currentBlock) * 100
+          : 0)
+      );
     }, 0);
-    endpointStatus.globalProgress = statuses.length > 0 ? totalProgress / statuses.length : 0;
-    
+    endpointStatus.globalProgress =
+      statuses.length > 0 ? totalProgress / statuses.length : 0;
   } catch (error) {
     console.error('Error fetching endpoint data:', error);
     endpointStatus.error = true;
@@ -223,33 +259,40 @@ const fetchEndpointData = async (endpoint: string) => {
 
 const fetchAllData = async () => {
   if (!isPageVisible.value) return;
-  
+
   console.log('Fetching data at:', new Date().toISOString());
-  
+
   try {
     const availableIndexers = new Set<string>();
     const allEndpoints = endpointStatuses.value;
-    const expandedEndpoints = endpointStatuses.value.filter(e => e.isExpanded);
-    
+
     // Fetch metadata for all endpoints to show basic sync info
-    await Promise.all(allEndpoints.map(async (endpointStatus) => {
-      try {
-        const metadatas = await fetchMetadata(endpointStatus.endpoint);
-        metadatas.forEach(metadata => {
-          availableIndexers.add(metadata.indexer);
-        });
-      } catch (error) {
-        console.error(`Error fetching metadata for ${endpointStatus.endpoint}:`, error);
-      }
-    }));
-    
+    await Promise.all(
+      allEndpoints.map(async endpointStatus => {
+        try {
+          const metadatas = await fetchMetadata(endpointStatus.endpoint);
+          metadatas.forEach(metadata => {
+            availableIndexers.add(metadata.indexer);
+          });
+        } catch (error) {
+          console.error(
+            `Error fetching metadata for ${endpointStatus.endpoint}:`,
+            error
+          );
+        }
+      })
+    );
+
     if (availableIndexers.size > 0) {
       await fetchCurrentBlocksForAvailableNetworks(availableIndexers);
     }
-    
+
     // Fetch detailed data for all endpoints to show sync percentages
-    await Promise.all(allEndpoints.map(endpointStatus => fetchEndpointData(endpointStatus.endpoint)));
-    
+    await Promise.all(
+      allEndpoints.map(endpointStatus =>
+        fetchEndpointData(endpointStatus.endpoint)
+      )
+    );
   } catch (error) {
     console.error('Error in fetchAllData:', error);
   }
@@ -261,20 +304,20 @@ const handleVisibilityChange = () => {
 
 const initializeApp = async () => {
   const savedStates = loadEndpointStates();
-  
+
   // If no saved endpoints (first time user), show a few default endpoints
   if (savedStates.length === 0) {
     const defaultEndpointsToShow = [
       'https://api.snapshot.box',
       'https://testnet-api.snapshot.box'
     ];
-    
+
     endpointStatuses.value = defaultEndpointsToShow.map(endpoint => {
       const endpointStatus = createEndpointStatus(endpoint);
       endpointStatus.hasStarted = true; // Mark as started so they show up
       return endpointStatus;
     });
-    
+
     // Save these as the initial set
     saveEndpointStates();
   } else {
@@ -283,7 +326,7 @@ const initializeApp = async () => {
       const endpointStatus = createEndpointStatus(savedState.endpoint);
       endpointStatus.isExpanded = savedState.isExpanded;
       endpointStatus.hasStarted = savedState.hasStarted;
-      
+
       return endpointStatus;
     });
   }
@@ -292,7 +335,7 @@ const initializeApp = async () => {
 onMounted(async () => {
   document.addEventListener('visibilitychange', handleVisibilityChange);
   isPageVisible.value = !document.hidden;
-  
+
   await initializeApp();
   // Start fetching data immediately
   await fetchAllData();
@@ -311,7 +354,7 @@ onUnmounted(() => {
     <div class="flex-1">
       <div class="w-full">
         <TableHeader />
-        
+
         <div>
           <CustomEndpointInput
             ref="customEndpointRef"
@@ -319,19 +362,22 @@ onUnmounted(() => {
             @add="addCustomEndpoint"
             @blur="handleCustomEndpointBlur"
           />
-          
-          <template v-for="endpointStatus in sortedEndpoints" :key="endpointStatus.endpoint">
+
+          <template
+            v-for="endpointStatus in sortedEndpoints"
+            :key="endpointStatus.endpoint"
+          >
             <EndpointRow
               :endpoint-status="endpointStatus"
               @toggle="toggleEndpoint"
               @remove="removeEndpoint"
             />
-            
+
             <EndpointError
               v-if="endpointStatus.isExpanded && endpointStatus.error"
               :endpoint="endpointStatus.endpoint"
             />
-            
+
             <NetworkStatusRow
               v-for="status in endpointStatus.networkStatuses"
               v-show="endpointStatus.isExpanded"

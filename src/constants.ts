@@ -19,7 +19,8 @@ export const NETWORKS: Network[] = [
     name: 'Sepolia',
     chainId: 11155111,
     indexer: 'sep',
-    image: 'https://ipfs.snapshot.box/ipfs/bafkreid7ndxh6y2ljw2jhbisodiyrhcy2udvnwqgon5wgells3kh4si5z4',
+    image:
+      'https://ipfs.snapshot.box/ipfs/bafkreid7ndxh6y2ljw2jhbisodiyrhcy2udvnwqgon5wgells3kh4si5z4',
     testnet: true
   },
   {
@@ -27,7 +28,8 @@ export const NETWORKS: Network[] = [
     name: 'Curtis',
     chainId: 33111,
     indexer: 'curtis',
-    image: 'https://ipfs.snapshot.box/ipfs/bafkreielbgcox2jsw3g6pqulqb7pyjgx7czjt6ahnibihaij6lozoy53w4',
+    image:
+      'https://ipfs.snapshot.box/ipfs/bafkreielbgcox2jsw3g6pqulqb7pyjgx7czjt6ahnibihaij6lozoy53w4',
     testnet: true
   },
   {
@@ -35,7 +37,8 @@ export const NETWORKS: Network[] = [
     name: 'Ethereum',
     chainId: 1,
     indexer: 'eth',
-    image: 'https://ipfs.snapshot.box/ipfs/bafkreid7ndxh6y2ljw2jhbisodiyrhcy2udvnwqgon5wgells3kh4si5z4',
+    image:
+      'https://ipfs.snapshot.box/ipfs/bafkreid7ndxh6y2ljw2jhbisodiyrhcy2udvnwqgon5wgells3kh4si5z4',
     testnet: false
   },
   {
@@ -43,7 +46,8 @@ export const NETWORKS: Network[] = [
     name: 'Base',
     chainId: 8453,
     indexer: 'base',
-    image: 'https://ipfs.snapshot.box/ipfs/QmaxRoHpxZd8PqccAynherrMznMufG6sdmHZLihkECXmZv',
+    image:
+      'https://ipfs.snapshot.box/ipfs/QmaxRoHpxZd8PqccAynherrMznMufG6sdmHZLihkECXmZv',
     testnet: false
   },
   {
@@ -51,7 +55,8 @@ export const NETWORKS: Network[] = [
     name: 'OP Mainnet',
     chainId: 10,
     indexer: 'oeth',
-    image: 'https://ipfs.snapshot.box/ipfs/bafkreifu2remiqfpsb4hgisbwb3qxedrzpwsea7ik4el45znjcf56xf2ku',
+    image:
+      'https://ipfs.snapshot.box/ipfs/bafkreifu2remiqfpsb4hgisbwb3qxedrzpwsea7ik4el45znjcf56xf2ku',
     testnet: false
   },
   {
@@ -59,7 +64,8 @@ export const NETWORKS: Network[] = [
     name: 'Arbitrum',
     chainId: 42161,
     indexer: 'arb1',
-    image: 'https://ipfs.snapshot.box/ipfs/bafkreic2p3zzafvz34y4tnx2kaoj6osqo66fpdo3xnagocil452y766gdq',
+    image:
+      'https://ipfs.snapshot.box/ipfs/bafkreic2p3zzafvz34y4tnx2kaoj6osqo66fpdo3xnagocil452y766gdq',
     testnet: false
   },
   {
@@ -67,7 +73,8 @@ export const NETWORKS: Network[] = [
     name: 'Polygon',
     chainId: 137,
     indexer: 'matic',
-    image: 'https://ipfs.snapshot.box/ipfs/bafkreihcx4zkpfjfcs6fazjp6lcyes4pdhqx3uvnjuo5uj2dlsjopxv5am',
+    image:
+      'https://ipfs.snapshot.box/ipfs/bafkreihcx4zkpfjfcs6fazjp6lcyes4pdhqx3uvnjuo5uj2dlsjopxv5am',
     testnet: false
   },
   {
@@ -75,7 +82,8 @@ export const NETWORKS: Network[] = [
     name: 'ApeChain',
     chainId: 33139,
     indexer: 'ape',
-    image: 'https://ipfs.snapshot.box/ipfs/bafkreielbgcox2jsw3g6pqulqb7pyjgx7czjt6ahnibihaij6lozoy53w4',
+    image:
+      'https://ipfs.snapshot.box/ipfs/bafkreielbgcox2jsw3g6pqulqb7pyjgx7czjt6ahnibihaij6lozoy53w4',
     testnet: false
   },
   {
@@ -83,7 +91,8 @@ export const NETWORKS: Network[] = [
     name: 'Mantle',
     chainId: 5000,
     indexer: 'mnt',
-    image: 'https://ipfs.snapshot.box/ipfs/bafkreidkucwfn4mzo2gtydrt2wogk3je5xpugom67vhi4h4comaxxjzoz4',
+    image:
+      'https://ipfs.snapshot.box/ipfs/bafkreidkucwfn4mzo2gtydrt2wogk3je5xpugom67vhi4h4comaxxjzoz4',
     testnet: false
   },
   {
@@ -91,7 +100,8 @@ export const NETWORKS: Network[] = [
     name: 'Starknet',
     chainId: -1,
     indexer: 'sn',
-    image: 'https://ipfs.snapshot.box/ipfs/bafkreihbjafyh7eud7r6e5743esaamifcttsvbspfwcrfoc5ykodjdi67m',
+    image:
+      'https://ipfs.snapshot.box/ipfs/bafkreihbjafyh7eud7r6e5743esaamifcttsvbspfwcrfoc5ykodjdi67m',
     testnet: false
   },
   {
@@ -99,7 +109,26 @@ export const NETWORKS: Network[] = [
     name: 'Starknet Sepolia',
     chainId: -1,
     indexer: 'sn-sep',
-    image: 'https://ipfs.snapshot.box/ipfs/bafkreihbjafyh7eud7r6e5743esaamifcttsvbspfwcrfoc5ykodjdi67m',
+    image:
+      'https://ipfs.snapshot.box/ipfs/bafkreihbjafyh7eud7r6e5743esaamifcttsvbspfwcrfoc5ykodjdi67m',
+    testnet: true
+  },
+  {
+    id: 'bnb',
+    name: 'BNB Chain',
+    chainId: 56,
+    indexer: 'bnb',
+    image:
+      'https://ipfs.snapshot.box/ipfs/bafkreihbjafyh7eud7r6e5743esaamifcttsvbspfwcrfoc5ykodjdi67m',
+    testnet: false
+  },
+  {
+    id: 'bnb-tn',
+    name: 'BNB Testnet',
+    chainId: 97,
+    indexer: 'bnb-tn',
+    image:
+      'https://ipfs.snapshot.box/ipfs/bafkreihbjafyh7eud7r6e5743esaamifcttsvbspfwcrfoc5ykodjdi67m',
     testnet: true
   }
 ];
