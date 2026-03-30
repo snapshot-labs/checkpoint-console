@@ -119,7 +119,7 @@ export const NETWORKS: Network[] = [
     chainId: 56,
     indexer: 'bnb',
     image:
-      'https://ipfs.snapshot.box/ipfs/bafkreihbjafyh7eud7r6e5743esaamifcttsvbspfwcrfoc5ykodjdi67m',
+      'https://ipfs.snapshot.box/ipfs/bafkreibll4la7wqerzs7zwxjne2j7ayynbg2wlenemssoahxxj5rbt6c64',
     testnet: false
   },
   {
@@ -128,7 +128,7 @@ export const NETWORKS: Network[] = [
     chainId: 97,
     indexer: 'bnb-tn',
     image:
-      'https://ipfs.snapshot.box/ipfs/bafkreihbjafyh7eud7r6e5743esaamifcttsvbspfwcrfoc5ykodjdi67m',
+      'https://ipfs.snapshot.box/ipfs/bafkreibll4la7wqerzs7zwxjne2j7ayynbg2wlenemssoahxxj5rbt6c64',
     testnet: true
   }
 ];
