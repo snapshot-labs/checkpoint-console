@@ -2,6 +2,12 @@ import { Network } from './types';
 
 export const UPDATE_INTERVAL_MS = 5000;
 
+export const HISTORY_WINDOW_MS = 10 * 60 * 1000;
+export const SPEED_HALF_LIFE_SECONDS = 90;
+export const MIN_HISTORY_SAMPLES = 3;
+export const MIN_HISTORY_SPAN_SECONDS = 30;
+export const MIN_BLOCKS_BEHIND_FOR_ETA = 10;
+
 export const ENDPOINTS = [
   'https://api.snapshot.box',
   'https://api-1.snapshot.box',

@@ -10,10 +10,28 @@ const emit = defineEmits<{
   remove: [endpoint: string];
 }>();
 
+const copied = ref(false);
+let copiedTimer: ReturnType<typeof setTimeout> | null = null;
+
 const handleRemove = (event: Event) => {
   event.preventDefault();
   event.stopPropagation();
   emit('remove', props.endpointStatus.endpoint);
+};
+
+const handleCopy = async (event: Event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  try {
+    await navigator.clipboard.writeText(props.endpointStatus.endpoint);
+    copied.value = true;
+    if (copiedTimer) clearTimeout(copiedTimer);
+    copiedTimer = setTimeout(() => {
+      copied.value = false;
+    }, 1500);
+  } catch (err) {
+    console.error('Failed to copy endpoint URL:', err);
+  }
 };
 
 const handleToggle = () => {
@@ -64,6 +82,40 @@ const handleToggle = () => {
         <span class="font-medium text-base text-white">{{
           endpointStatus.endpoint
         }}</span>
+        <button
+          @click="handleCopy"
+          class="flex-shrink-0 w-7 h-7 rounded-md bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100"
+          :title="copied ? 'Copied!' : 'Copy endpoint URL'"
+        >
+          <svg
+            v-if="copied"
+            class="w-4 h-4 text-green-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          <svg
+            v-else
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+            />
+          </svg>
+        </button>
       </div>
 
       <!-- Blocks column -->
