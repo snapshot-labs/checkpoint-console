@@ -1,13 +1,21 @@
 <script setup lang="ts">
-import { NETWORKS, UPDATE_INTERVAL_MS } from '../constants';
-import { EndpointStatus, IndexingHistory } from '../types';
+import {
+  HISTORY_WINDOW_MS,
+  MIN_BLOCKS_BEHIND_FOR_ETA,
+  MIN_HISTORY_SAMPLES,
+  MIN_HISTORY_SPAN_SECONDS,
+  NETWORKS,
+  UPDATE_INTERVAL_MS
+} from '../constants';
+import { BlockSample, EndpointStatus } from '../types';
 
 const isPageVisible = ref(true);
 const isAddingCustomEndpoint = ref(false);
 const isCustomEndpointFocused = ref(false);
 const endpointStatuses = ref<EndpointStatus[]>([]);
 const globalCurrentBlocks = ref<Map<string, number>>(new Map());
-const indexingHistory = ref<Map<string, IndexingHistory[]>>(new Map());
+const indexingHistory = ref<Map<string, BlockSample[]>>(new Map());
+const chainBlockHistory = ref<Map<string, BlockSample[]>>(new Map());
 const customEndpointRef = ref();
 
 let interval: number;
@@ -111,18 +119,21 @@ const toggleEndpoint = async (endpoint: string) => {
   }
 };
 
+const historyKeyFor = (endpoint: string, indexer: string) =>
+  `${endpoint}::${indexer}`;
+
 const removeEndpoint = (endpoint: string) => {
   const index = endpointStatuses.value.findIndex(e => e.endpoint === endpoint);
   if (index !== -1) {
     endpointStatuses.value.splice(index, 1);
   }
 
-  const networksForEndpoint = NETWORKS.filter(() =>
-    endpointStatuses.value.some(e => e.endpoint === endpoint)
-  );
-  networksForEndpoint.forEach(network => {
-    indexingHistory.value.delete(network.indexer);
-  });
+  const prefix = `${endpoint}::`;
+  for (const key of [...indexingHistory.value.keys()]) {
+    if (key.startsWith(prefix)) {
+      indexingHistory.value.delete(key);
+    }
+  }
 
   saveEndpointStates();
 };
@@ -161,8 +172,16 @@ const fetchCurrentBlocksForAvailableNetworks = async (
 
     const allBlocks = [...mainnetBlocks, ...testnetBlocks];
     const newGlobalBlocks = new Map(globalCurrentBlocks.value);
+    const now = Date.now();
+    const cutoff = now - HISTORY_WINDOW_MS;
     allBlocks.forEach(({ networkId, block }) => {
       newGlobalBlocks.set(networkId, block);
+      const prior = chainBlockHistory.value.get(networkId) || [];
+      const recent: BlockSample[] = [
+        ...prior.filter(h => h.timestamp >= cutoff),
+        { timestamp: now, block }
+      ];
+      chainBlockHistory.value.set(networkId, recent);
     });
     globalCurrentBlocks.value = newGlobalBlocks;
   } catch (error) {
@@ -203,37 +222,47 @@ const fetchEndpointData = async (endpoint: string) => {
         metadatas.find(m => m.indexer === network.indexer)?.value || '0'
       );
 
-      const history = indexingHistory.value.get(network.indexer) || [];
-      const { blocksPerSecond } = calculateIndexingSpeed(
-        network.indexer,
-        indexedBlock,
-        history
-      );
-
-      // Update history
+      const historyKey = historyKeyFor(endpoint, network.indexer);
       const now = Date.now();
-      const updatedHistory = [...history, { timestamp: now, indexedBlock }];
-      const tenMinutesAgo = now - 10 * 60 * 1000;
-      const recentHistory = updatedHistory.filter(
-        h => h.timestamp > tenMinutesAgo
-      );
-      indexingHistory.value.set(network.indexer, recentHistory);
+      const cutoff = now - HISTORY_WINDOW_MS;
+      const priorHistory = indexingHistory.value.get(historyKey) || [];
+      const recentHistory: BlockSample[] = [
+        ...priorHistory.filter(h => h.timestamp >= cutoff),
+        { timestamp: now, block: indexedBlock }
+      ];
+      indexingHistory.value.set(historyKey, recentHistory);
 
+      const indexerSpeed = calculateIndexingSpeed(recentHistory);
+      const chainSpeed = calculateIndexingSpeed(
+        chainBlockHistory.value.get(network.id) || []
+      );
+      const effectiveSpeed = indexerSpeed - chainSpeed;
       const blocksBehind = currentBlock - indexedBlock;
       const estimatedTimeToSync =
-        blocksBehind === 0
-          ? 0
-          : blocksPerSecond > 0
-            ? blocksBehind / blocksPerSecond
-            : 0;
+        blocksBehind >= MIN_BLOCKS_BEHIND_FOR_ETA && effectiveSpeed > 0
+          ? blocksBehind / effectiveSpeed
+          : 0;
+
+      const hasEnoughHistory =
+        recentHistory.length >= MIN_HISTORY_SAMPLES &&
+        (recentHistory[recentHistory.length - 1].timestamp -
+          recentHistory[0].timestamp) /
+          1000 >=
+          MIN_HISTORY_SPAN_SECONDS;
+      const firstBlock = recentHistory[0].block;
+      const madeProgress = recentHistory.some(h => h.block !== firstBlock);
+      const isStalled =
+        hasEnoughHistory &&
+        !madeProgress &&
+        blocksBehind >= MIN_BLOCKS_BEHIND_FOR_ETA;
 
       return {
         network,
         currentBlock,
         indexedBlock,
-        history: recentHistory,
-        blocksPerSecond,
-        estimatedTimeToSync
+        blocksPerSecond: indexerSpeed,
+        estimatedTimeToSync,
+        isStalled
       };
     });
 

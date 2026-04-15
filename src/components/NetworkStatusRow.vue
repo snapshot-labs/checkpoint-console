@@ -7,8 +7,12 @@ const props = defineProps<{
   endpointUrl: string;
 }>();
 
-const { formatTimeEstimate, getBlockDifference, getSyncPercentage } =
-  useUtils();
+const {
+  formatSpeed,
+  formatTimeEstimate,
+  getBlockDifference,
+  getSyncPercentage
+} = useUtils();
 
 const getProgressColor = () => {
   const diff = getBlockDifference(props.status);
@@ -73,11 +77,20 @@ const getProgressColor = () => {
     <!-- Speed and ETA -->
     <div class="px-2 py-2 text-right w-24">
       <div
-        v-if="status.estimatedTimeToSync > 3"
-        class="font-normal text-sm text-white"
+        v-if="status.isStalled"
+        class="font-medium text-sm text-amber-400"
+        title="No block progress detected in the last 2 minutes"
       >
-        {{ formatTimeEstimate(status.estimatedTimeToSync) }}
+        Stalled
       </div>
+      <template v-else-if="status.estimatedTimeToSync > 3">
+        <div class="font-normal text-sm text-white">
+          {{ formatTimeEstimate(status.estimatedTimeToSync) }}
+        </div>
+        <div class="font-normal text-xs text-gray-500">
+          {{ formatSpeed(status.blocksPerSecond) }}
+        </div>
+      </template>
     </div>
 
     <!-- Sync percentage -->

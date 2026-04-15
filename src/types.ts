@@ -19,15 +19,15 @@ export interface NetworkStatus {
   indexedBlock: number;
 }
 
-export interface IndexingHistory {
+export interface BlockSample {
   timestamp: number;
-  indexedBlock: number;
+  block: number;
 }
 
 export interface NetworkWithHistory extends NetworkStatus {
-  history: IndexingHistory[];
   blocksPerSecond: number;
   estimatedTimeToSync: number;
+  isStalled: boolean;
 }
 
 export interface EndpointStatus {
