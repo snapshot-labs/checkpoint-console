@@ -7,8 +7,8 @@
     "dev": "bunx --bun vite",
     "build": "bunx vue-tsc --noEmit && bunx --bun vite build",
     "preview": "bunx --bun vite preview",
-    "lint": "bunx eslint . --ext .vue,.js,.ts --fix",
-    "lint:check": "bunx eslint . --ext .vue,.js,.ts",
+    "lint": "bunx eslint . --ext .vue,.js,.ts",
+    "lint:fix": "bun run lint --fix",
     "format": "bunx prettier --write .",
     "format:check": "bunx prettier --check ."
   },
